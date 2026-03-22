@@ -78,39 +78,32 @@ class TelegramNotifier:
         price = float(trade.get("price", 0))
         usdc_size = float(trade.get("usdcSize", shares * price))
         outcome = trade.get("outcome", "")
-
         # Get trade timestamp
         trade_ts = trade.get("timestamp", 0)
         trade_time = datetime.fromtimestamp(trade_ts).strftime("%Y-%m-%d %H:%M:%S") if trade_ts else "Unknown"
 
-        # Direction indicator
-        direction = "📈 BUY" if is_buy else "📉 SELL"
+        # Direction and outcome emojis
+        side_emoji = "🟤" if is_buy else "🔵"
+        outcome_upper = outcome.upper() if outcome else ""
+        outcome_emoji = "🟢" if outcome_upper == "YES" else ("🔴" if outcome_upper == "NO" else "🟣")
 
         # Build message (using Markdown parse mode)
         lines = [
-            f"*{direction}*",
+            f"{side_emoji}{outcome_emoji} {self._escape_markdown(market_name)}",
             "",
-            f"*Market:* {self._escape_markdown(market_name)}",
-        ]
-
-        if outcome:
-            lines.append(f"*Outcome:* {self._escape_markdown(outcome)}")
-
-        lines.extend([
             f"*Shares:* {shares:,.2f}",
             f"*Price:* ${price:.4f}",
             f"*Total:* ${usdc_size:,.2f} USDC",
             "",
             f"_{trade_time}_",
-        ])
+        ]
 
         return "\n".join(lines)
 
     def _escape_markdown(self, text: str) -> str:
-        """Escape special characters for Telegram Markdown."""
-        # Characters that need escaping in Markdown mode
-        special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
-        for char in special_chars:
+        """Escape special characters for Telegram legacy Markdown parse mode."""
+        # Only these four need escaping in legacy Markdown (not MarkdownV2)
+        for char in ['_', '*', '`', '[']:
             text = text.replace(char, f"\\{char}")
         return text
 
