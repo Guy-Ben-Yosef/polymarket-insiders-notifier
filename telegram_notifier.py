@@ -19,16 +19,18 @@ TELEGRAM_API_URL = "https://api.telegram.org"
 class TelegramNotifier:
     """Sends formatted trade alerts to Telegram."""
 
-    def __init__(self, bot_token: str, chat_ids: list[str]):
+    def __init__(self, bot_token: str, chat_ids: list[str], label: str = ""):
         """
         Initialize the Telegram notifier.
 
         Args:
             bot_token: Telegram Bot API token from BotFather
             chat_ids: List of chat IDs to send notifications to
+            label: Optional wallet nickname shown at the top of each alert
         """
         self.bot_token = bot_token
         self.chat_ids = chat_ids
+        self.label = label
         self.api_base = f"{TELEGRAM_API_URL}/bot{bot_token}"
 
     @classmethod
@@ -88,7 +90,10 @@ class TelegramNotifier:
         outcome_emoji = "🟢" if outcome_upper == "YES" else ("🔴" if outcome_upper == "NO" else "🟣")
 
         # Build message (using Markdown parse mode)
-        lines = [
+        lines = []
+        if self.label:
+            lines.append(f"👤 *{self._escape_markdown(self.label)}*")
+        lines += [
             f"{side_emoji}{outcome_emoji} {self._escape_markdown(market_name)}",
             "",
             f"*Shares:* {shares:,.2f}",
