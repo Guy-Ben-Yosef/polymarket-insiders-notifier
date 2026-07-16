@@ -90,10 +90,7 @@ class TelegramNotifier:
         outcome_emoji = "🟢" if outcome_upper == "YES" else ("🔴" if outcome_upper == "NO" else "🟣")
 
         # Build message (using Markdown parse mode)
-        lines = []
-        if self.label:
-            lines.append(f"👤 *{self._escape_markdown(self.label)}*")
-        lines += [
+        lines = [
             f"{side_emoji}{outcome_emoji} {self._escape_markdown(market_name)}",
             "",
             f"*Shares:* {shares:,.2f}",
